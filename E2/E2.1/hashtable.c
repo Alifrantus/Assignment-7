@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "hashtable.h"
 
 HashTable* create_table() {
@@ -8,33 +9,38 @@ HashTable* create_table() {
     return table;
 }
 
-int hash_function(int key) {
-    return key % TABLE_SIZE;
+unsigned int hash(char *str) {
+    unsigned int h = 0;
+    for (int i = 0; str[i] != '\0'; i++) h = h * 31 + str[i];
+    return h % TABLE_SIZE;
 }
 
-void insert(HashTable* table, int key, int value) {
-    int index = hash_function(key);
+void insert(HashTable* table, char *name, char *phone) {
+    unsigned int index = hash(name);
     Node* newNode = malloc(sizeof(Node));
-    newNode->key = key;
-    newNode->value = value;
+    strcpy(newNode->name, name);
+    strcpy(newNode->phone, phone);
     newNode->next = table->buckets[index];
     table->buckets[index] = newNode;
 }
 
-int search(HashTable* table, int key) {
-    int index = hash_function(key);
+void search(HashTable* table, char *name) {
+    unsigned int index = hash(name);
     Node* temp = table->buckets[index];
     while (temp) {
-        if (temp->key == key) return temp->value;
+        if (strcmp(temp->name, name) == 0) {
+            printf("Found: %s - %s\n", name, temp->phone);
+            return;
+        }
         temp = temp->next;
     }
-    return -1; // Not found
+    printf("Contact %s not found.\n", name);
 }
 
-void delete_node(HashTable* table, int key) {
-    int index = hash_function(key);
+void delete_contact(HashTable* table, char *name) {
+    unsigned int index = hash(name);
     Node *temp = table->buckets[index], *prev = NULL;
-    while (temp && temp->key != key) {
+    while (temp && strcmp(temp->name, name) != 0) {
         prev = temp;
         temp = temp->next;
     }
